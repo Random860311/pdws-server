@@ -1,0 +1,95 @@
+import time
+from abc import ABC, abstractmethod
+
+from core.dispatcher.event_dispatcher_protocol import EventDispatcherProtocol
+from device.base.device_runnable_protocol import DeviceRunnableProtocol
+from device.base.device import Device
+from device.base.device_status import EDeviceStatus
+from services.device.device_service_protocol import DeviceServiceProtocol
+from services.io.io_service_protocol import IOServiceProtocol
+
+
+class DeviceRunnable(DeviceRunnableProtocol, Device, ABC):
+    def __init__(self, device_id: int, device_service: DeviceServiceProtocol, io_service: IOServiceProtocol, event_dispatcher: EventDispatcherProtocol):
+        super().__init__(device_id, device_service, io_service, event_dispatcher)
+
+        self.__status = EDeviceStatus.STOPPED
+        self.__emergency_stop = False
+
+        self.__alarm_fail_to_start_time = 0.0
+        self.__current_run_start_time = 0.0
+
+        self.__alarm_fail_to_start_delay = 0
+
+    @property
+    def status(self) -> EDeviceStatus:
+        return self.__status
+
+    @status.setter
+    def status(self, value: EDeviceStatus) -> None:
+        self.__status = value
+
+        if value == EDeviceStatus.RUNNING:
+            self.__alarm_fail_to_start_time = 0.0
+            self.__current_run_start_time = time.perf_counter()
+        if value == EDeviceStatus.STOPPED:
+            current = self.run_time_current
+            self.device_service.add_device_total_run_time(self.device_name, current)
+            self.device_service.set_device_last_run_time(self.device_name, current)
+            self.__current_run_start_time = 0.0
+
+    @property
+    def can_run(self) -> bool:
+        return (not self.has_critical_alarm) and (not self.__emergency_stop)
+
+    @property
+    def can_run_auto(self) -> bool:
+        return self.can_run
+
+    @abstractmethod
+    def call_to_run(self) -> None:
+        if self.__alarm_fail_to_start_time == 0.0 and self.alarm_fail_to_start_delay > 0:
+            self.__alarm_fail_to_start_time = time.perf_counter()
+
+    @abstractmethod
+    def stop(self) -> None:
+        pass
+
+    def set_emergency_stop(self, value: bool) -> None:
+        self.__emergency_stop = value
+        self.stop()
+
+    @property
+    def alarm_fail_to_start_delay(self) -> int:
+        return self.__alarm_fail_to_start_delay
+
+    @alarm_fail_to_start_delay.setter
+    def alarm_fail_to_start_delay(self, value: int) -> None:
+        self.__alarm_fail_to_start_delay = value
+
+    @property
+    def alarm_fail_to_start(self) -> bool:
+        if self.__alarm_fail_to_start_delay == 0:
+            return False
+        else:
+            return (time.perf_counter() - self.__alarm_fail_to_start_time) > self.__alarm_fail_to_start_delay
+
+    @property
+    def has_alarm(self) -> bool:
+        return super().has_alarm or self.alarm_fail_to_start
+
+    @property
+    def run_time_current(self) -> float:
+        return 0.0 if self.__current_run_start_time == 0.0 else time.perf_counter() - self.__current_run_start_time
+
+    @property
+    def run_time_last(self) -> float:
+        return self.device_service.get_device_last_run_time(self.device_name)
+
+    @property
+    def run_time_total(self) -> float:
+        return self.device_service.get_device_total_run_time(self.device_name) + self.run_time_current
+
+    def reset_run_time(self) -> None:
+        self.__current_run_start_time = 0.0
+        self.device_service.clear_device_run_times(self.device_name)
