@@ -56,8 +56,10 @@ def create_di(defaults=True) -> StationProtocol:
 
     device_service = DeviceService()
 
+    pi = pigpio.pi()
+    pi.write(17, 1)
     ai_module_0 = Ads1115_AI()
-    di_module_0 = GPIO_DI(pigpio.pi())
+    di_module_0 = GPIO_DI(pi)
 
     application_service = build_application_service(defaults=defaults)
 
