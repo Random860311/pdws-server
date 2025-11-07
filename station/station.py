@@ -65,11 +65,11 @@ class Station(StationProtocol):
 
     def __worker(self):
         while not self.__abort_event.is_set():
-            self.__io_service.scan()
-            self.__alternator.alternate()
-            self.__starter.execute()
-
-            self.__emit_update()
+            # self.__io_service.scan()
+            # self.__alternator.alternate()
+            # self.__starter.execute()
+            #
+            # self.__emit_update()
 
             self.__abort_event.wait(0.5)
 
@@ -82,6 +82,7 @@ class Station(StationProtocol):
 
     def __emit_update(self):
         systems_dto = [s.to_serializable() for s in self.systems]
+        # print(f"Sensor pressure: {self.sensor_pressure.value_scaled}")
         station_dto = StationDto(
             systems=systems_dto,
             pressure_sensor=self.sensor_pressure.to_serializable(),

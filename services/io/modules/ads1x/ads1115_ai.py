@@ -10,6 +10,8 @@ from adafruit_ads1x15 import ADS1115, AnalogIn, ads1x15
 class Ads1115_AI(AIModuleProtocol):
     def __init__(self):
         self.__channels: dict[int, AnalogIn] = {}
+
+    def initialize(self) -> None:
         try:
             # Create the I2C bus
             i2c = board.I2C()
@@ -27,8 +29,12 @@ class Ads1115_AI(AIModuleProtocol):
             print(f"Error: {e}")
             traceback.print_exc()
 
+    def managed_pos(self, io_pos: int) -> bool:
+        return io_pos in self.__channels.keys()
+
     def get_value(self, ai_pos: int) -> Optional[int]:
         chan = self.__channels.get(ai_pos, None)
+        print(f"ai_pos: {ai_pos}, value: {chan.value if chan else None}")
         if not chan:
             return None
         return chan.value

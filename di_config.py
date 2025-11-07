@@ -22,6 +22,7 @@ from services.io.io_service import IOService
 from services.io.io_service_protocol import IOServiceProtocol
 from services.io.modules.ads1x.ads1115_ai import Ads1115_AI
 from services.io.modules.gpio.gpio_di import GPIO_DI
+from services.io.modules.gpio.gpio_do import GPIO_DO
 from station.alternatator.alternator_protocol import AlternatorProtocol
 from station.alternatator.time_alternator import TimeAlternator
 from station.starter.IncBasicStarter import IncBasicStarter
@@ -57,9 +58,10 @@ def create_di(defaults=True) -> StationProtocol:
     device_service = DeviceService()
 
     pi = pigpio.pi()
-    pi.write(17, 1)
+    # pi.write(17, 1)
     ai_module_0 = Ads1115_AI()
     di_module_0 = GPIO_DI(pi)
+    do_module_0 = GPIO_DO(pi)
 
     application_service = build_application_service(defaults=defaults)
 
@@ -69,8 +71,12 @@ def create_di(defaults=True) -> StationProtocol:
     io_service = IOService(
         event_dispatcher=event_dispatcher,
         ai_modules=[ai_module_0],
-        di_modules=[di_module_0]
+        di_modules=[di_module_0],
+        do_modules=[do_module_0]
     )
+
+    do_module_0.set_value(0, True)
+    do_module_0.set_value(2, True)
 
     container.register_instance(IOServiceProtocol, io_service)
     container.register_instance(ApplicationServiceProtocol, application_service)

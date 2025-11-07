@@ -42,23 +42,40 @@ class IOService(IOServiceProtocol):
         self.__do_lock = threading.RLock()
 
         for di_module in self.__di_modules:
+            di_module.initialize()
             di_module.callback = self.__on_di_change
 
+        for do_module in self.__do_modules:
+            do_module.initialize()
+            do_module.callback = self.__on_do_change
+
+        for ai_module in self.__ai_modules:
+            ai_module.initialize()
+
+        for ao_module in self.__ao_modules:
+            ao_module.initialize()
+
     def get_digital_input_value(self, di_pos: int) -> bool:
-        return self.__di_cache.get(di_pos, False)
+        with self.__di_lock:
+            return self.__di_cache.get(di_pos, False)
 
     def get_digital_output_value(self, do_pos: int) -> bool:
-        return self.__do_cache.get(do_pos, False)
+        with self.__do_lock:
+            return self.__do_cache.get(do_pos, False)
 
     def set_digital_output_value(self, do_pos: int, value: bool) -> None:
-        pass
+        with self.__do_lock:
+            module = next(m for m in self.__do_modules if m.managed_pos(do_pos))
+            if module:
+                module.set_value(do_pos, value)
 
     def get_analog_input_value(self, ai_pos: int) -> int:
         with self.__ai_lock:
             return self.__ai_cache.get(ai_pos, 0)
 
     def get_analog_output_value(self, ai_pos: int) -> int:
-        return self.__ao_cache.get(ai_pos, 0)
+        with self.__ao_lock:
+            return self.__ao_cache.get(ai_pos, 0)
 
     def set_analog_output_value(self, ai_pos: int, value: int) -> None:
         pass
@@ -105,3 +122,9 @@ class IOService(IOServiceProtocol):
                 self.__di_cache[di_pos] = value
                 self.__event_dispatcher.emit_async(DIEvent(io_id=di_pos, value_old=old_di, value_new=value))
 
+    def __on_do_change(self, do_pos: int, value: bool) -> None:
+        with self.__do_lock:
+            old_do = self.__do_cache.get(do_pos)
+            if (old_do is None) or (old_do != value):
+                self.__do_cache[do_pos] = value
+                self.__event_dispatcher.emit_async(DIEvent(io_id=do_pos, value_old=old_do, value_new=value))

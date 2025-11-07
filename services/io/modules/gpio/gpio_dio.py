@@ -3,13 +3,20 @@ from typing import Optional, Callable
 
 import pigpio
 
+from services.io.modules.digital_module_protocol import DigitalModuleProtocol
 
-class GpioDio(ABC):
+
+class GpioDio(DigitalModuleProtocol, ABC):
     def __init__(self, pi: pigpio.pi):
         self.__pi = pi
         self.__callback: Optional[Callable[[int, bool], None]] = None
 
         self.__gpio_callbacks = []
+
+    @property
+    @abstractmethod
+    def dio_map(self) -> dict[int, int]:
+        pass
 
     @property
     def pi(self) -> pigpio.pi:
@@ -29,6 +36,31 @@ class GpioDio(ABC):
 
         self.__gpio_callbacks.append(gpio_callback)
 
-    @abstractmethod
     def handle_pin_status(self, gpio: int, level: int, tick) -> None:
-        pass
+        print(f"GPIO {gpio} changed to {level}")
+        if self.callback is None:
+            return
+        di_pos = self.dio_map.get(gpio, None)
+        if di_pos is None:
+            return
+        self.callback(di_pos, level == 1)
+
+    def get_all_values(self) -> list[bool]:
+        result: list[bool] = []
+        for gpio, di in self.dio_map.items():
+            result.append(bool(self.pi.read(gpio)))
+        return result
+
+    @property
+    def io_count(self) -> int:
+        return len(self.dio_map)
+
+    def get_value(self, dio_pos: int) -> Optional[bool]:
+        for gpio, di in self.dio_map.items():
+            if di == dio_pos:
+                return bool(self.pi.read(gpio))
+        return None
+
+    def cleanup(self) -> None:
+        for gpio_callback in self.__gpio_callbacks:
+            gpio_callback.cancel()

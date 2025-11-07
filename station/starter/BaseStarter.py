@@ -90,14 +90,14 @@ class BaseStarter(StarterProtocol, ABC):
 
     def execute(self) -> None:
         if self.should_start():
-            print("Should start")
+            # print("Should start")
             system = self.get_next_stopped_system()
             if system is not None:
                 system.call_to_run()
             self.start_call_time = 0.0
 
         if self.should_stop():
-            print("Should stop")
+            # print("Should stop")
             system = self.get_last_running_system()
             if system is not None:
                 system.stop()
