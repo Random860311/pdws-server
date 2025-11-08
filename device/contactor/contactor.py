@@ -44,6 +44,10 @@ class Contactor(ContactorProtocol, DeviceRunnable):
     def do_run(self) -> int:
         return self.__do_run
 
+    @property
+    def is_called_to_run(self) -> bool:
+        return self.io_service.get_digital_output_value(self.do_run)
+
     def __handle_di_change(self, event: DIEvent):
         if event.io_id != self.di_running:
             return
@@ -56,7 +60,7 @@ class Contactor(ContactorProtocol, DeviceRunnable):
             return
         self.io_service.set_digital_output_value(self.do_run, True)
         super().call_to_run()
-        print(f"Contactor {self.device_name} called to run")
+        print(f"Contactor {self.device_name} called to run on DO: {self.do_run}")
 
     def stop(self) -> None:
         self.io_service.set_digital_output_value(self.do_run, False)
@@ -65,7 +69,7 @@ class Contactor(ContactorProtocol, DeviceRunnable):
         return ContactorDto(
             device_id=self.device_id,
             device_name=self.device_name,
-            call_to_run=self.io_service.get_digital_output_value(self.do_run),
+            call_to_run=self.is_called_to_run,
             alarm_fail_to_start=self.alarm_fail_to_start,
             status=self.status,
             can_run=self.can_run,

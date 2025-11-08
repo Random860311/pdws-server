@@ -5,7 +5,7 @@ from device.base.device_status import EDeviceStatus
 from device.sensor.sensor_protocol import SensorProtocol
 from device.system.system_protocol import SystemProtocol
 from services.application.application_service_protocol import ApplicationServiceProtocol
-from station.starter.StarterProtocol import StarterProtocol
+from station.starter.starter_protocol import StarterProtocol
 
 
 class BaseStarter(StarterProtocol, ABC):

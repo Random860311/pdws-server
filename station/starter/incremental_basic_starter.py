@@ -4,7 +4,7 @@ from typing import Sequence
 from device.sensor.sensor_protocol import SensorProtocol
 from device.system.system_protocol import SystemProtocol
 from services.application.application_service_protocol import ApplicationServiceProtocol
-from station.starter.BaseStarter import BaseStarter
+from station.starter.base_starter import BaseStarter
 
 
 class IncBasicStarter(BaseStarter):

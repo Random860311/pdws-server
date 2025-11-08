@@ -10,7 +10,7 @@ from device.system.system_protocol import SystemProtocol
 from dto.station_dto import StationDto
 from services.io.io_service_protocol import IOServiceProtocol
 from station.alternatator.alternator_protocol import AlternatorProtocol
-from station.starter.StarterProtocol import StarterProtocol
+from station.starter.starter_protocol import StarterProtocol
 from station.station_protocol import StationProtocol
 from web.events.station.station_update_event import StationUpdateEvent
 
@@ -65,11 +65,11 @@ class Station(StationProtocol):
 
     def __worker(self):
         while not self.__abort_event.is_set():
-            # self.__io_service.scan()
-            # self.__alternator.alternate()
-            # self.__starter.execute()
-            #
-            # self.__emit_update()
+            self.__io_service.scan()
+            self.__alternator.alternate()
+            self.__starter.execute()
+
+            self.__emit_update()
 
             self.__abort_event.wait(0.5)
 
@@ -82,6 +82,7 @@ class Station(StationProtocol):
 
     def __emit_update(self):
         systems_dto = [s.to_serializable() for s in self.systems]
+        # print(f"System 3 is called to run: {self.systems[2].is_called_to_run}")
         # print(f"Sensor pressure: {self.sensor_pressure.value_scaled}")
         station_dto = StationDto(
             systems=systems_dto,

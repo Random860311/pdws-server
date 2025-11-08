@@ -82,9 +82,9 @@ def build_application_systems(defaults = True) -> Sequence[SystemProtocol]:
                 device_id=i+1,
                 contactor=contactor_list[i],
                 pump=None,
-                mode=ESystemMode.AUTO,
+                mode=ESystemMode.OFF,
                 di_hand=position_hand if defaults else read_number(f"Enter digital input number for HAND of system {i + 1}:", int),
-                di_auto=position_auto if defaults else read_number(f"Enter digital input number for HAND of system {i + 1}:", int),
+                di_auto=position_auto if defaults else read_number(f"Enter digital input number for AUTO of system {i + 1}:", int),
             )
         )
         position_hand = position_auto + 1

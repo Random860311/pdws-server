@@ -152,10 +152,10 @@ class System(SystemProtocol, Device):
 
     @property
     def mode(self) -> ESystemMode:
-        if self.__physical_mode == ESystemMode.OFF:
-            return ESystemMode.OFF
-        elif self.__physical_mode == ESystemMode.HAND:
-            return ESystemMode.HAND
+        # if self.__physical_mode == ESystemMode.OFF:
+        #     return ESystemMode.OFF
+        # elif self.__physical_mode == ESystemMode.HAND:
+        #     return ESystemMode.HAND
         return self.__software_mode
 
     @mode.setter
@@ -184,6 +184,10 @@ class System(SystemProtocol, Device):
     def priority_hand(self) -> ESystemPriority:
         return self.__priority_hand if self.can_run else ESystemPriority.OUT
 
+    @property
+    def is_called_to_run(self) -> bool:
+        return self.contactor.is_called_to_run if self.contactor else False
+
     @priority_hand.setter
     def priority_hand(self, value: ESystemPriority) -> None:
         self.__priority_hand = value
@@ -201,7 +205,7 @@ class System(SystemProtocol, Device):
             status=self.status,
             can_run=self.can_run,
             can_run_auto=self.can_run_auto,
-            call_to_run=False,
+            call_to_run=self.is_called_to_run,
             alarm_fail_to_start=self.alarm_fail_to_start,
 
             mode=self.mode,

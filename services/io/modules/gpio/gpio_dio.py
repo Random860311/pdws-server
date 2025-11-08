@@ -36,14 +36,9 @@ class GpioDio(DigitalModuleProtocol, ABC):
 
         self.__gpio_callbacks.append(gpio_callback)
 
+    @abstractmethod
     def handle_pin_status(self, gpio: int, level: int, tick) -> None:
-        print(f"GPIO {gpio} changed to {level}")
-        if self.callback is None:
-            return
-        di_pos = self.dio_map.get(gpio, None)
-        if di_pos is None:
-            return
-        self.callback(di_pos, level == 1)
+        pass
 
     def get_all_values(self) -> list[bool]:
         result: list[bool] = []
@@ -64,3 +59,6 @@ class GpioDio(DigitalModuleProtocol, ABC):
     def cleanup(self) -> None:
         for gpio_callback in self.__gpio_callbacks:
             gpio_callback.cancel()
+
+    def managed_pos(self, io_pos: int) -> bool:
+        return io_pos in self.dio_map.values()

@@ -64,9 +64,11 @@ class IOService(IOServiceProtocol):
             return self.__do_cache.get(do_pos, False)
 
     def set_digital_output_value(self, do_pos: int, value: bool) -> None:
+        print(f"Set DO: {do_pos}, Value: {value}")
         with self.__do_lock:
-            module = next(m for m in self.__do_modules if m.managed_pos(do_pos))
+            module = next((m for m in self.__do_modules if m.managed_pos(do_pos)), None)
             if module:
+                print("Module found, setting value")
                 module.set_value(do_pos, value)
 
     def get_analog_input_value(self, ai_pos: int) -> int:

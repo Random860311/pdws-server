@@ -1,5 +1,7 @@
-from typing import Tuple
+from enum import Enum
+from typing import Tuple, Optional, TypeVar, Type, Any
 
+TEnum = TypeVar("TEnum", bound=Enum)
 
 def scale_value(
     in_value: float,
@@ -64,3 +66,37 @@ def split_elapsed(seconds: float) -> Tuple[int, int, int, int]:
     minutes, secs = divmod(rem, 60)
 
     return int(days), int(hours), int(minutes), int(secs)
+
+def get_int(data: dict, key: str, default: Optional[int] = None) -> int:
+    """Parse an int field or raise ValueError"""
+    try:
+        return int(data.get(key, default))
+    except Exception:
+        raise ValueError(f"Missing or invalid '{key}'.")
+
+def get_bool(data: dict, key: str, default: Optional[bool] = None) -> bool:
+    """Parse a bool field or raise ValueError"""
+    try:
+        return bool(data.get(key, default))
+    except Exception:
+        raise ValueError(f"Missing or invalid '{key}'.")
+
+def get_enum(data: dict, key: str, enum_cls: Type[TEnum], default: Optional[TEnum] = None)-> TEnum:
+    value = data.get(key)
+    if value is None:
+        return default
+    return enum_from_any(enum_cls, value, default)
+
+def enum_from_any(enum_cls: Type[TEnum], value: Any, default: Optional[TEnum] = None) -> TEnum:
+    try:
+        # Try by value first
+        return enum_cls(value)
+    except (ValueError, TypeError):
+        if isinstance(value, str):
+            try:
+                return enum_cls[value]  # lookup by NAME (exact case)
+            except KeyError:
+                pass
+        if default is not None:
+            return default
+        raise ValueError(f"{value!r} is not a valid {enum_cls.__name__}")

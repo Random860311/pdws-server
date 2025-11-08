@@ -14,6 +14,15 @@ class GPIO_DI(DIModuleProtocol, GpioDio):
     def dio_map(self) -> dict[int, int]:
         return GPIO_DI_MAP
 
+    def handle_pin_status(self, gpio: int, level: int, tick) -> None:
+        print(f"GPIO {gpio} changed to {level}")
+        if self.callback is None:
+            return
+        di_pos = self.dio_map.get(gpio, None)
+        if di_pos is None:
+            return
+        self.callback(di_pos, level == 0)
+
     def initialize(self) -> None:
         for gpio_pin in self.dio_map.keys():
             self.pi.set_mode(gpio_pin, pigpio.INPUT)

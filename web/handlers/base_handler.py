@@ -1,7 +1,7 @@
 import functools
 import traceback
 from abc import ABC, abstractmethod
-from typing import Optional, Callable
+from typing import Optional, Callable, Any
 
 from flask_socketio import SocketIO
 
@@ -36,12 +36,12 @@ class BaseHandler(ABC):
             print("Error in _emit_event: ", str(e), str(event.event_name), event.data)
 
     @staticmethod
-    def ok(data: Optional[SerializableProtocol] = None) -> SerializableProtocol:
-        return ResponseDto(status_code=EStatusCode.SUCCESS, data=data)
+    def ok(data: Optional[SerializableProtocol] = None) -> dict[str, Any]:
+        return ResponseDto(status_code=EStatusCode.SUCCESS, data=data).to_dict()
 
     @staticmethod
-    def fail(data: Optional[SerializableProtocol] = None, status_code: EStatusCode = EStatusCode.ERROR) -> SerializableProtocol:
-        return ResponseDto(status_code=status_code, data=data)
+    def fail(data: Optional[SerializableProtocol] = None, status_code: EStatusCode = EStatusCode.ERROR) -> dict[str, Any]:
+        return ResponseDto(status_code=status_code, data=data).to_dict()
 
     def log_error(self, where: str, err: Exception, *, bad_request: bool = False):
         prefix = "[BadRequest]" if bad_request else "[Error]"
@@ -53,7 +53,6 @@ class BaseHandler(ABC):
         """
         Decorator for handler methods.
         """
-
         def _decorator(func: Callable):
             @functools.wraps(func)
             def _wrapped(self: "BaseHandler", *args, **kwargs):

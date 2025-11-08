@@ -6,3 +6,5 @@ class EAppEvents(str, Enum):
     ERROR = "app:error"
 
     STATION_EMIT_UPDATE = "station:emit_update"
+
+    SYSTEM_SET_MODE = "system:set_mode"

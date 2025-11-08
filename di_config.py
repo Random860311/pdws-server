@@ -25,7 +25,7 @@ from services.io.modules.gpio.gpio_di import GPIO_DI
 from services.io.modules.gpio.gpio_do import GPIO_DO
 from station.alternatator.alternator_protocol import AlternatorProtocol
 from station.alternatator.time_alternator import TimeAlternator
-from station.starter.IncBasicStarter import IncBasicStarter
+from station.starter.incremental_basic_starter import IncBasicStarter
 from station.station import Station
 from station.station_protocol import StationProtocol
 from web.handlers.station_handler import StationHandler
@@ -58,7 +58,7 @@ def create_di(defaults=True) -> StationProtocol:
     device_service = DeviceService()
 
     pi = pigpio.pi()
-    # pi.write(17, 1)
+
     ai_module_0 = Ads1115_AI()
     di_module_0 = GPIO_DI(pi)
     do_module_0 = GPIO_DO(pi)
@@ -74,9 +74,6 @@ def create_di(defaults=True) -> StationProtocol:
         di_modules=[di_module_0],
         do_modules=[do_module_0]
     )
-
-    do_module_0.set_value(0, True)
-    do_module_0.set_value(2, True)
 
     container.register_instance(IOServiceProtocol, io_service)
     container.register_instance(ApplicationServiceProtocol, application_service)
@@ -166,7 +163,11 @@ def create_di(defaults=True) -> StationProtocol:
     #region Web Handlers
     container.register_instance(StationProtocol, station)
 
-    station_handler = StationHandler(socketio=socketio, dispatcher=container.resolve(EventDispatcherProtocol))
+    station_handler = StationHandler(
+        socketio=socketio,
+        dispatcher=container.resolve(EventDispatcherProtocol),
+        station=container.resolve(StationProtocol)
+    )
 
     station_handler.register()
 
