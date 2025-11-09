@@ -22,6 +22,12 @@ class EConfigKey(str, Enum):
     SENSOR_ALARM_STOP_HIGH = "alarm_stop_high"
     SENSOR_ALARM_START_HIGH_HIGH = "alarm_start_high_high"
     SENSOR_ALARM_STOP_HIGH_HIGH = "alarm_stop_high_high"
+    SENSOR_ALARM_START_LOW = "alarm_start_low"
+    SENSOR_ALARM_STOP_LOW = "alarm_stop_low"
+    SENSOR_ALARM_START_LOW_LOW = "alarm_start_low_low"
+    SENSOR_ALARM_STOP_LOW_LOW = "alarm_stop_low_low"
+    SENSOR_HIGH_HIGH_CRITICAL = "high_high_critical"
+    SENSOR_LOW_LOW_CRITICAL = "low_low_critical"
 
 class DeviceService(DeviceServiceProtocol):
     def __init__(self):
@@ -60,28 +66,27 @@ class DeviceService(DeviceServiceProtocol):
         return self.__configs[device_name]
 
     def get_sensor_config(self, device_id: int, device_name: str, default: Optional[SensorConfigDto] = None) -> Optional[SensorConfigDto]:
-        if not device_name in self.__configs:
-            if default is None:
-                return None
-            else:
-                self.set_sensor_config(device_name, default)
-                return default
-
         config = self.get_config(device_name)
         return SensorConfigDto(
             device_id=device_id,
             device_name=device_name,
-            value_scaled_max=config.get_float(EConfigKey.SENSOR_VALUE_SCALED_MAX, 0.0),
-            value_scaled_min=config.get_float(EConfigKey.SENSOR_VALUE_SCALED_MIN, 0.0),
-            ai_max=config.get_int(EConfigKey.SENSOR_AI_MAX, 0),
-            ai_min=config.get_int(EConfigKey.SENSOR_AI_MIN, 0),
-            need_alarm_reset=config.get_bool(EConfigKey.SENSOR_ALARM_RESET, False),
-            alarm_start_delay=config.get_int(EConfigKey.SENSOR_ALARM_START_DELAY, 0),
-            alarm_stop_delay=config.get_int(EConfigKey.SENSOR_ALARM_STOP_DELAY, 0),
-            alarm_start_high=config.get_float(EConfigKey.SENSOR_ALARM_START_HIGH, 0.0),
-            alarm_stop_high=config.get_float(EConfigKey.SENSOR_ALARM_STOP_HIGH, 0.0),
-            alarm_start_high_high=config.get_float(EConfigKey.SENSOR_ALARM_START_HIGH_HIGH, 0.0),
-            alarm_stop_high_high=config.get_float(EConfigKey.SENSOR_ALARM_STOP_HIGH_HIGH, 0.0)
+            value_scaled_max=config.get_float(EConfigKey.SENSOR_VALUE_SCALED_MAX, default.value_scaled_max if default is not None else 0.0),
+            value_scaled_min=config.get_float(EConfigKey.SENSOR_VALUE_SCALED_MIN, default.value_scaled_min if default is not None else 0.0),
+            ai_max=config.get_int(EConfigKey.SENSOR_AI_MAX, default.ai_max if default is not None else 0),
+            ai_min=config.get_int(EConfigKey.SENSOR_AI_MIN, default.ai_min if default is not None else 0),
+            need_alarm_reset=config.get_bool(EConfigKey.SENSOR_ALARM_RESET, default.need_alarm_reset if default is not None else False),
+            alarm_start_delay=config.get_int(EConfigKey.SENSOR_ALARM_START_DELAY, default.alarm_start_delay if default is not None else 0),
+            alarm_stop_delay=config.get_int(EConfigKey.SENSOR_ALARM_STOP_DELAY, default.alarm_stop_delay if default is not None else 0),
+            alarm_start_high=config.get_float(EConfigKey.SENSOR_ALARM_START_HIGH, default.alarm_start_high if default is not None else 0.0),
+            alarm_stop_high=config.get_float(EConfigKey.SENSOR_ALARM_STOP_HIGH, default.alarm_stop_high if default is not None else 0.0),
+            alarm_start_high_high=config.get_float(EConfigKey.SENSOR_ALARM_START_HIGH_HIGH, default.alarm_start_high_high if default is not None else 0.0),
+            alarm_stop_high_high=config.get_float(EConfigKey.SENSOR_ALARM_STOP_HIGH_HIGH, default.alarm_stop_high_high if default is not None else 0.0),
+            alarm_start_low=config.get_float(EConfigKey.SENSOR_ALARM_START_LOW, default.alarm_start_low if default is not None else 0.0),
+            alarm_stop_low=config.get_float(EConfigKey.SENSOR_ALARM_STOP_LOW, default.alarm_stop_low if default is not None else 0.0),
+            alarm_start_low_low=config.get_float(EConfigKey.SENSOR_ALARM_START_LOW_LOW, default.alarm_start_low_low if default is not None else 0.0),
+            alarm_stop_low_low=config.get_float(EConfigKey.SENSOR_ALARM_STOP_LOW_LOW, default.alarm_stop_low_low if default is not None else 0.0),
+            is_high_high_critical=config.get_bool(EConfigKey.SENSOR_HIGH_HIGH_CRITICAL, default.is_high_high_critical if default is not None else False),
+            is_low_low_critical=config.get_bool(EConfigKey.SENSOR_LOW_LOW_CRITICAL, default.is_low_low_critical if default is not None else False),
         )
 
     def set_sensor_config(self, device_name: str, sensor: SensorConfigDto) -> None:
@@ -97,3 +102,9 @@ class DeviceService(DeviceServiceProtocol):
         config.set(EConfigKey.SENSOR_ALARM_STOP_HIGH, sensor.alarm_stop_high)
         config.set(EConfigKey.SENSOR_ALARM_START_HIGH_HIGH, sensor.alarm_start_high_high)
         config.set(EConfigKey.SENSOR_ALARM_STOP_HIGH_HIGH, sensor.alarm_stop_high_high)
+        config.set(EConfigKey.SENSOR_ALARM_START_LOW, sensor.alarm_start_low)
+        config.set(EConfigKey.SENSOR_ALARM_STOP_LOW, sensor.alarm_stop_low)
+        config.set(EConfigKey.SENSOR_ALARM_START_LOW_LOW, sensor.alarm_start_low_low)
+        config.set(EConfigKey.SENSOR_ALARM_STOP_LOW_LOW, sensor.alarm_stop_low_low)
+        config.set(EConfigKey.SENSOR_HIGH_HIGH_CRITICAL, sensor.is_high_high_critical)
+        config.set(EConfigKey.SENSOR_LOW_LOW_CRITICAL, sensor.is_low_low_critical)

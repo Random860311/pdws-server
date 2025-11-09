@@ -72,21 +72,15 @@ class BaseStarter(StarterProtocol, ABC):
         candidates = [sys for sys in self.systems if sys.can_run_auto and sys.status == EDeviceStatus.STOPPED]
         if not candidates:
             return None
-        system = candidates[0]
-        for sys in candidates:
-            if system.priority_auto < sys.priority_auto:
-                system = sys
-        return system
+        ordered = sorted(candidates, key=lambda s: s.priority_auto)
+        return ordered[0]
 
     def get_last_running_system(self) -> Optional[SystemProtocol]:
         candidates = [sys for sys in self.systems if sys.can_run_auto and sys.status == EDeviceStatus.RUNNING]
         if not candidates:
             return None
-        system = candidates[0]
-        for sys in candidates:
-            if system.priority_auto > sys.priority_auto:
-                system = sys
-        return system
+        ordered = sorted(candidates, key=lambda s: s.priority_auto, reverse=True)
+        return ordered[0]
 
     def execute(self) -> None:
         if self.should_start():

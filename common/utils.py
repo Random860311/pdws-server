@@ -100,3 +100,22 @@ def enum_from_any(enum_cls: Type[TEnum], value: Any, default: Optional[TEnum] = 
         if default is not None:
             return default
         raise ValueError(f"{value!r} is not a valid {enum_cls.__name__}")
+
+
+def read_number(prompt: str, number_type: type = float):
+    """
+    Reads a number (float or int) from the console.
+    Keeps asking until valid input is provided.
+
+    Args:
+        prompt: Text to show to the user.
+        number_type: Either float or int (default: float).
+
+    Returns:
+        The entered number converted to the requested type.
+    """
+    while True:
+        try:
+            return number_type(input(prompt))
+        except ValueError:
+            print(f"Invalid input! Please enter a valid {number_type.__name__}.")

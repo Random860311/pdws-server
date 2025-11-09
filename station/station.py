@@ -8,6 +8,7 @@ from device.system.system_mode import ESystemMode
 from device.system.system_priority import ESystemPriority
 from device.system.system_protocol import SystemProtocol
 from dto.station_dto import StationDto
+from services.application.application_service_protocol import ApplicationServiceProtocol
 from services.io.io_service_protocol import IOServiceProtocol
 from station.alternatator.alternator_protocol import AlternatorProtocol
 from station.starter.starter_protocol import StarterProtocol
@@ -22,6 +23,7 @@ class Station(StationProtocol):
             event_dispatcher: EventDispatcherProtocol,
             alternator: AlternatorProtocol,
             io_service: IOServiceProtocol,
+            app_service: ApplicationServiceProtocol,
             starter: StarterProtocol,
             sensor_pressure: SensorProtocol,
             systems: Sequence[SystemProtocol],
@@ -31,6 +33,7 @@ class Station(StationProtocol):
         self.__event_dispatcher = event_dispatcher
         self.__abort_event = threading.Event()
         self.__io_service = io_service
+        self.__app_service = app_service
         self.__alternator = alternator
         self.__starter = starter
 
@@ -89,6 +92,7 @@ class Station(StationProtocol):
             pressure_sensor=self.sensor_pressure.to_serializable(),
             additional_sensor=self.sensor_additional.to_serializable() if self.sensor_additional is not None else None,
             io_status=self.__io_service.to_serializable(),
+            app_settings=self.__app_service.to_serializable(),
         )
         self.__event_dispatcher.emit_async(StationUpdateEvent(station_dto))
         # import json

@@ -1,11 +1,9 @@
-import pigpio
 from flask import Flask
 from flask_socketio import SocketIO
 
 from core.di.di_container import container
-from core.dispatcher.event_dispatcher import EventDispatcher
 from core.dispatcher.event_dispatcher_protocol import EventDispatcherProtocol
-from core.thread_manager_protocol import ThreadManager, ThreadManagerProtocol
+from core.thread_manager_protocol import ThreadManagerProtocol
 from device.contactor.contactor import Contactor
 from device.contactor.contactor_protocol import ContactorProtocol
 from device.pump.pump import Pump
@@ -14,15 +12,11 @@ from device.sensor.sensor import Sensor
 from device.sensor.sensor_protocol import SensorProtocol
 from device.system.system import System
 from device.system.system_protocol import SystemProtocol
-from factory import build_application_systems, build_pressure_sensor, build_application_service
+from factory import build_application_systems, build_pressure_sensor, build_application_service, build_thread_manager, build_event_dispatcher, build_io_service
 from services.application.application_service_protocol import ApplicationServiceProtocol
 from services.device.device_service import DeviceService
 from services.device.device_service_protocol import DeviceServiceProtocol
-from services.io.io_service import IOService
 from services.io.io_service_protocol import IOServiceProtocol
-from services.io.modules.ads1x.ads1115_ai import Ads1115_AI
-from services.io.modules.gpio.gpio_di import GPIO_DI
-from services.io.modules.gpio.gpio_do import GPIO_DO
 from station.alternatator.alternator_protocol import AlternatorProtocol
 from station.alternatator.time_alternator import TimeAlternator
 from station.starter.incremental_basic_starter import IncBasicStarter
@@ -32,56 +26,14 @@ from web.handlers.station_handler import StationHandler
 from web.socket_app import socketio, flask_app
 
 def create_di(defaults=True) -> StationProtocol:
-    #region SocketIO and Flask
-
     container.register_instance(SocketIO, socketio)
     container.register_instance(Flask, flask_app)
+    container.register_instance(ThreadManagerProtocol, build_thread_manager())
+    container.register_instance(EventDispatcherProtocol, build_event_dispatcher())
 
-    #endregion
-
-    #region ThreadManager
-
-    thread_manager = ThreadManager(socketio=socketio)
-    container.register_instance(ThreadManagerProtocol, thread_manager)
-
-    #endregion
-
-    #region EventDispatcher
-
-    event_dispatcher = EventDispatcher(thread_manager=thread_manager)
-    container.register_instance(EventDispatcherProtocol, event_dispatcher)
-
-    #endregion
-
-    #region Services
-
-    device_service = DeviceService()
-
-    pi = pigpio.pi()
-
-    ai_module_0 = Ads1115_AI()
-    di_module_0 = GPIO_DI(pi)
-    do_module_0 = GPIO_DO(pi)
-
-    application_service = build_application_service(defaults=defaults)
-
-    for i in range(0, ai_module_0.io_count):
-        application_service.set_ai_max_raw(i, ai_module_0.get_max_value())
-
-    io_service = IOService(
-        event_dispatcher=event_dispatcher,
-        ai_modules=[ai_module_0],
-        di_modules=[di_module_0],
-        do_modules=[do_module_0]
-    )
-
-    container.register_instance(IOServiceProtocol, io_service)
-    container.register_instance(ApplicationServiceProtocol, application_service)
-    container.register_instance(DeviceServiceProtocol, device_service)
-
-    #endregion
-
-    #region Devices
+    container.register_instance(IOServiceProtocol, build_io_service())
+    container.register_instance(ApplicationServiceProtocol, build_application_service(defaults=defaults))
+    container.register_instance(DeviceServiceProtocol, DeviceService())
 
     container.register_factory(
         SensorProtocol,
@@ -89,60 +41,53 @@ def create_di(defaults=True) -> StationProtocol:
             *args,
             **{
                 **kwargs,
-                "device_service": device_service,
-                "io_service": io_service,
-                "event_dispatcher": event_dispatcher
+                "device_service": container.resolve(DeviceServiceProtocol),
+                "io_service": container.resolve(IOServiceProtocol),
+                "event_dispatcher": container.resolve(EventDispatcherProtocol)
             }
         )
     )
-
     container.register_factory(
         ContactorProtocol,
         lambda *args, **kwargs: Contactor(
             *args,
             **{
                 **kwargs,
-                "device_service": device_service,
-                "io_service": io_service,
-                "event_dispatcher": event_dispatcher
+                "device_service": container.resolve(DeviceServiceProtocol),
+                "io_service": container.resolve(IOServiceProtocol),
+                "event_dispatcher": container.resolve(EventDispatcherProtocol)
             }
         )
     )
-
     container.register_factory(
         PumpProtocol,
         lambda *args, **kwargs: Pump(
             *args,
             **{
                 **kwargs,
-                "device_service": device_service,
-                "io_service": io_service,
-                "event_dispatcher": event_dispatcher
+                "device_service": container.resolve(DeviceServiceProtocol),
+                "io_service": container.resolve(IOServiceProtocol),
+                "event_dispatcher": container.resolve(EventDispatcherProtocol)
             }
         )
     )
-
     container.register_factory(
         SystemProtocol,
         lambda *args, **kwargs: System(
             *args,
             **{
                 **kwargs,
-                "device_service": device_service,
-                "io_service": io_service,
-                "event_dispatcher": event_dispatcher
+                "device_service": container.resolve(DeviceServiceProtocol),
+                "io_service": container.resolve(IOServiceProtocol),
+                "event_dispatcher": container.resolve(EventDispatcherProtocol)
             }
         )
     )
 
-    #endregion
-
     systems = build_application_systems(defaults=defaults)
-
-    alternator = TimeAlternator(systems=systems)
-    container.register_instance(AlternatorProtocol, alternator)
-
     pressure_sensor = build_pressure_sensor(defaults=defaults)
+
+    container.register_instance(AlternatorProtocol, TimeAlternator(systems=systems))
 
     starter = IncBasicStarter(
         app_service=container.resolve(ApplicationServiceProtocol),
@@ -155,6 +100,7 @@ def create_di(defaults=True) -> StationProtocol:
         event_dispatcher=container.resolve(EventDispatcherProtocol),
         alternator=container.resolve(AlternatorProtocol),
         io_service=container.resolve(IOServiceProtocol),
+        app_service=container.resolve(ApplicationServiceProtocol),
         starter=starter,
         sensor_pressure = pressure_sensor,
         systems=systems,

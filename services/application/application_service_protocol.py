@@ -1,5 +1,7 @@
 from typing import Protocol
 
+from core.serializable_protocol import SerializableProtocol
+
 
 class ApplicationServiceProtocol(Protocol):
     @property
@@ -7,30 +9,22 @@ class ApplicationServiceProtocol(Protocol):
 
     @property
     def level_set_point(self) -> float: ...
-
     @level_set_point.setter
     def level_set_point(self, value: float) -> None: ...
 
     @property
     def level_offset(self) -> float: ...
-
     @level_offset.setter
     def level_offset(self, value: float) -> None: ...
 
     @property
     def start_pump_delay(self) -> int: ...
-
     @start_pump_delay.setter
     def start_pump_delay(self, value: int) -> None: ...
 
     @property
     def stop_pump_delay(self) -> int: ...
-
     @stop_pump_delay.setter
     def stop_pump_delay(self, value: int) -> None: ...
 
-    def get_ai_min_raw(self, ai: int) -> int: ...
-
-    def get_ai_max_raw(self, ai: int) -> int: ...
-
-    def set_ai_max_raw(self, ai: int, value: int) -> None: ...
+    def to_serializable(self) -> SerializableProtocol: ...

@@ -1,7 +1,9 @@
 from dataclasses import dataclass
 from typing import Sequence, Tuple
 
+from common import utils
 from device.base.device_status import EDeviceStatus
+from device.system.system_priority import ESystemPriority
 from device.system.system_protocol import SystemProtocol
 from station.alternatator.alternator_protocol import AlternatorProtocol
 
@@ -31,15 +33,16 @@ class TimeAlternator(AlternatorProtocol):
             result.can_run_auto_count += 1 if sys.can_run_auto else 0
         return result
 
-    def alternate(self) -> Sequence[Tuple[int, int]]:
+    def alternate(self) -> None:
         current_status = self.__get_system_status(self.systems)
         if self.__systems_order and current_status == self.__system_status:
-            return self.__systems_order
+            return
 
         self.__system_status = current_status
 
         # keep only systems that can run in auto
         candidates = [sys for sys in self.systems if sys.can_run_auto]
+
         if not candidates:
             self.__systems_order = []
         else:
@@ -47,5 +50,14 @@ class TimeAlternator(AlternatorProtocol):
             ordered = sorted(candidates, key=lambda s: s.run_time_total)
 
             # assign priorities: 0,1,2,... (lower runtime → lower priority number)
-            self.__system_status = [(sys.device_id, prio) for prio, sys in enumerate(ordered)]
-        return self.__system_status
+            self.__systems_order = [(sys.device_id, prio) for prio, sys in enumerate(ordered)]
+
+        assigned = False
+        for sys in self.__systems:
+            for order in self.__systems_order:
+                if sys.device_id == order[0]:
+                    sys.priority_auto = utils.enum_from_any(ESystemPriority, order[1], ESystemPriority.OUT)
+                    assigned = True
+                    break
+            if not assigned:
+                sys.priority_auto = ESystemPriority.OUT

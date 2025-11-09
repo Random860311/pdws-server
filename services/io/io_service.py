@@ -14,6 +14,7 @@ from services.io.modules.ai_module_protocol import AIModuleProtocol
 from services.io.modules.ao_module_protocol import AOModuleProtocol
 from services.io.modules.di_module_protocol import DIModuleProtocol
 from services.io.modules.do_module_protocol import DOModuleProtocol
+from services.io.modules.io_module_protocol import IOModuleProtocol
 
 
 class IOService(IOServiceProtocol):
@@ -75,11 +76,11 @@ class IOService(IOServiceProtocol):
         with self.__ai_lock:
             return self.__ai_cache.get(ai_pos, 0)
 
-    def get_analog_output_value(self, ai_pos: int) -> int:
+    def get_analog_output_value(self, ao_pos: int) -> int:
         with self.__ao_lock:
-            return self.__ao_cache.get(ai_pos, 0)
+            return self.__ao_cache.get(ao_pos, 0)
 
-    def set_analog_output_value(self, ai_pos: int, value: int) -> None:
+    def set_analog_output_value(self, ao_pos: int, value: int) -> None:
         pass
 
     def scan(self) -> None:
@@ -130,3 +131,34 @@ class IOService(IOServiceProtocol):
             if (old_do is None) or (old_do != value):
                 self.__do_cache[do_pos] = value
                 self.__event_dispatcher.emit_async(DIEvent(io_id=do_pos, value_old=old_do, value_new=value))
+
+    def get_ai_max_raw(self, ai_pos: int) -> int:
+        with self.__ai_lock:
+            module = next((m for m in self.__ai_modules if m.managed_pos(ai_pos)), None)
+            return module.get_max_value() if module else 0
+
+    def get_ao_max_raw(self, ao_pos: int) -> int:
+        return 0
+
+    def get_ai_count(self) -> int:
+        with self.__ai_lock:
+            return self.get_io_count(self.__ai_modules)
+
+    def get_di_count(self) -> int:
+        with self.__di_lock:
+            return self.get_io_count(self.__di_modules)
+
+    def get_ao_count(self) -> int:
+        with self.__ao_lock:
+            return self.get_io_count(self.__ao_modules)
+
+    def get_do_count(self) -> int:
+        with self.__do_lock:
+            return self.get_io_count(self.__do_modules)
+
+    @staticmethod
+    def get_io_count(modules: list[IOModuleProtocol]) -> int:
+        count = 0
+        for m in modules:
+            count += m.io_count
+        return count

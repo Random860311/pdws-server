@@ -11,3 +11,4 @@ class StationDto(BaseDto):
     pressure_sensor: SerializableProtocol
     additional_sensor: Optional[SerializableProtocol] = field(kw_only=True, default=None)
     io_status: SerializableProtocol
+    app_settings: SerializableProtocol
