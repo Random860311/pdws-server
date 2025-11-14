@@ -22,7 +22,9 @@ from station.alternatator.time_alternator import TimeAlternator
 from station.starter.incremental_basic_starter import IncBasicStarter
 from station.station import Station
 from station.station_protocol import StationProtocol
+from web.handlers.settings_handler import SettingsHandler
 from web.handlers.station_handler import StationHandler
+from web.handlers.system_handler import SystemHandler
 from web.socket_app import socketio, flask_app
 
 def create_di(defaults=True) -> StationProtocol:
@@ -115,9 +117,26 @@ def create_di(defaults=True) -> StationProtocol:
         station=container.resolve(StationProtocol)
     )
 
+    system_handler = SystemHandler(
+        socketio=socketio,
+        dispatcher=container.resolve(EventDispatcherProtocol),
+        station=container.resolve(StationProtocol)
+    )
+
+    settings_handler = SettingsHandler(
+        socketio=socketio,
+        dispatcher=container.resolve(EventDispatcherProtocol),
+        station=container.resolve(StationProtocol),
+        app_service=container.resolve(ApplicationServiceProtocol)
+    )
+
     station_handler.register()
+    system_handler.register()
+    settings_handler.register()
 
     container.register_instance(StationHandler, station_handler)
+    container.register_instance(SystemHandler, station_handler)
+    container.register_instance(SettingsHandler, station_handler)
     #endregion
 
     return station

@@ -5,25 +5,21 @@ from core.serializable_protocol import SerializableProtocol
 from dto.application.application_dto import ApplicationDto
 from services.application.application_service_protocol import ApplicationServiceProtocol
 
-class ApplicationKwargs(TypedDict, total=False):
-    system_count: int
-    level_set_point: float
-    level_offset: float
-    start_pump_delay: int
-    stop_pump_delay: int
-
-
-
 class ApplicationService(ApplicationServiceProtocol):
-    def __init__(self, **kwargs: Unpack[ApplicationKwargs]) -> None:
+    def __init__(self, config: ApplicationDto) -> None:
         self.__config = KVConfig(section="app")
 
-        self.__config.set("system_count", kwargs.get("system_count", 3))
-        self.__config.set("level_set_point", kwargs.get("level_set_point", 0.0))
-        self.__config.set("level_offset", kwargs.get("level_offset", 0.0))
-        self.__config.set("start_pump_delay", kwargs.get("start_pump_delay", 0))
-        self.__config.set("stop_pump_delay", kwargs.get("stop_pump_delay", 0))
+        merged = config.to_dict() | self.__config.items()
 
+        self.update_config(ApplicationDto(**merged))
+
+    def update_config(self, config: ApplicationDto) -> None:
+        print(f"Updating application config: {config}")
+        self.__config.set("system_count", config.system_count if config.system_count else 3)
+        self.__config.set("level_set_point", config.level_set_point if config.level_set_point else 0.0)
+        self.__config.set("level_offset", config.level_offset if config.level_offset else 0.0)
+        self.__config.set("start_pump_delay", config.start_pump_delay if config.start_pump_delay else 0)
+        self.__config.set("stop_pump_delay", config.stop_pump_delay if config.stop_pump_delay else 0)
 
     @property
     def system_count(self) -> int:

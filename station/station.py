@@ -7,6 +7,7 @@ from device.sensor.sensor_protocol import SensorProtocol
 from device.system.system_mode import ESystemMode
 from device.system.system_priority import ESystemPriority
 from device.system.system_protocol import SystemProtocol
+from dto.device.sensor_dto import SensorConfigDto
 from dto.station_dto import StationDto
 from services.application.application_service_protocol import ApplicationServiceProtocol
 from services.io.io_service_protocol import IOServiceProtocol
@@ -65,6 +66,13 @@ class Station(StationProtocol):
         sys = self.get_system(device_id)
         if sys is not None:
             sys.mode = mode
+
+    def set_sensor_config(self, config: SensorConfigDto):
+        if config.device_id == self.sensor_pressure.device_id:
+            self.sensor_pressure.config = config
+        elif self.sensor_additional and config.device_id == self.sensor_additional.device_id:
+            self.sensor_additional.config = config
+
 
     def __worker(self):
         while not self.__abort_event.is_set():

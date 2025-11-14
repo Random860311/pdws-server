@@ -13,6 +13,7 @@ from device.device_ids import EDeviceIds
 from device.sensor.sensor_protocol import SensorProtocol
 from device.system.system_mode import ESystemMode
 from device.system.system_protocol import SystemProtocol
+from dto.application.application_dto import ApplicationDto
 from dto.device.sensor_dto import SensorConfigDto
 from services.application.application_service import ApplicationService
 from services.application.application_service_protocol import ApplicationServiceProtocol
@@ -53,13 +54,13 @@ def build_application_service(defaults = True) -> ApplicationServiceProtocol:
     stop_pump_delay = 5 if defaults else read_number(f"Enter stop pumps delay (s):", int)
 
 
-    application_service = ApplicationService(
+    application_service = ApplicationService(ApplicationDto(
         system_count=system_count,
         level_set_point=set_point,
         level_offset=offset,
         start_pump_delay=start_pump_delay,
         stop_pump_delay=stop_pump_delay
-    )
+    ))
 
     return application_service
 

@@ -4,6 +4,7 @@ from device.sensor.sensor_protocol import SensorProtocol
 from device.system.system_mode import ESystemMode
 from device.system.system_priority import ESystemPriority
 from device.system.system_protocol import SystemProtocol
+from dto.device.sensor_dto import SensorConfigDto
 
 
 class StationProtocol(Protocol):
@@ -21,6 +22,8 @@ class StationProtocol(Protocol):
     def set_system_priority_hand(self, device_id: int, priority: ESystemPriority) -> None: ...
 
     def set_system_mode(self, device_id: int, mode: ESystemMode) -> None: ...
+
+    def set_sensor_config(self, config: SensorConfigDto) -> None: ...
 
     def start(self): ...
 

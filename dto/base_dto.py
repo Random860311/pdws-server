@@ -2,16 +2,22 @@ from datetime import date, datetime
 from dataclasses import dataclass, is_dataclass, asdict, fields
 from decimal import Decimal
 from enum import Enum
-from typing import Any, Mapping
-
+from typing import Any, Mapping,TypeVar, Self
 
 from core.serializable_protocol import SerializableProtocol
+
+
 
 @dataclass
 class BaseDto(SerializableProtocol):
     def to_dict(self) -> dict[str, Any]:
         return asdict(self) #_to_serializable(self)
 
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> Self:
+        field_names = {f.name for f in fields(cls)}
+        filtered = {k: v for k, v in data.items() if k in field_names}
+        return cls(**filtered)
 
 def _to_serializable(obj: Any, _seen: set[int] | None = None) -> Any:
     if _seen is None:

@@ -98,22 +98,26 @@ class IOService(IOServiceProtocol):
 
     def to_serializable(self) -> SerializableProtocol:
         with self.__di_lock:
-            di = [DigitalIoDto(io_id=k, value=v) for k, v in self.__di_cache.items()]
+            di: list[DigitalIoDto] = []
+            for di_module in self.__di_modules:
+                di += [DigitalIoDto(io_id=k, value=v) for k, v in enumerate(di_module.get_all_values())]
         with self.__do_lock:
-            do = [DigitalIoDto(io_id=k, value=v) for k, v in self.__do_cache.items()]
+            do: list[DigitalIoDto] = []
+            for do_module in self.__do_modules:
+                do += [DigitalIoDto(io_id=k, value=v) for k, v in enumerate(do_module.get_all_values())]
         with self.__ai_lock:
             ai: list[AnalogIoDto] = []
             ai_pos = 0
             for ai_module in self.__ai_modules:
                 for ai_value in ai_module.get_all_values():
-                    ai.append(AnalogIoDto(io_id=ai_pos, raw_value=ai_value, ma_value=utils.scale_value(ai_value, 0, ai_module.get_max_value(), 4, 20)))
+                    ai.append(AnalogIoDto(io_id=ai_pos, raw_value=ai_value, ma_value=round(utils.scale_value(ai_value, 0, ai_module.get_max_value(), 4, 20), 1)))
                     ai_pos += 1
         with self.__ao_lock:
             ao: list[AnalogIoDto] = []
             ao_pos = 0
             for ao_module in self.__ao_modules:
                 for ao_value in ao_module.get_all_values():
-                    ao.append(AnalogIoDto(io_id=ao_pos, raw_value=ao_value, ma_value=utils.scale_value(ao_value, 0, ao_module.get_max_value(), 4, 20)))
+                    ao.append(AnalogIoDto(io_id=ao_pos, raw_value=ao_value, ma_value=round(utils.scale_value(ao_value, 0, ao_module.get_max_value(), 4, 20), 1)))
                     ao_pos += 1
 
         return IoStatusDto(di=di, do=do, ai=ai, ao=ao)

@@ -30,6 +30,8 @@ class SensorConfigDto(DeviceDto):
     is_high_high_critical: bool = field(kw_only=True, default=True)
     is_low_low_critical: bool = field(kw_only=True, default=True)
 
+    adjustment: float = field(kw_only=True, default=0.0)
+
 @dataclass
 class SensorDto(SensorConfigDto):
     value_scaled: float

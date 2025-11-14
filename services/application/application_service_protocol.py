@@ -1,9 +1,12 @@
 from typing import Protocol
 
 from core.serializable_protocol import SerializableProtocol
+from dto.application.application_dto import ApplicationDto
 
 
 class ApplicationServiceProtocol(Protocol):
+    def update_config(self, config: ApplicationDto) -> None: ...
+
     @property
     def system_count(self) -> int: ...
 

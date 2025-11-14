@@ -4,7 +4,7 @@ from common.alarm.alarm_protocol import AlarmProtocol
 from dto.device.sensor_dto import SensorConfigDto
 
 
-class SensorAlarManager(AlarmProtocol):
+class SensorConfigManager(AlarmProtocol):
     def __init__(self, config: SensorConfigDto):
         self.__value = 0.0
 
@@ -23,6 +23,9 @@ class SensorAlarManager(AlarmProtocol):
     @property
     def config(self) -> SensorConfigDto:
         return self.__config
+    @config.setter
+    def config(self, value: SensorConfigDto) -> None:
+        self.__config = value
 
     @property
     def start_high_elapsed_time(self) -> float:

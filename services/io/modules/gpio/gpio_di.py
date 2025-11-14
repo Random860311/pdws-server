@@ -23,6 +23,18 @@ class GPIO_DI(DIModuleProtocol, GpioDio):
             return
         self.callback(di_pos, level == 0)
 
+    def get_all_values(self) -> list[bool]:
+        result: list[bool] = []
+        for gpio, di in self.dio_map.items():
+            result.append(not bool(self.pi.read(gpio)))
+        return result
+
+    def get_value(self, dio_pos: int) -> Optional[bool]:
+        for gpio, di in self.dio_map.items():
+            if di == dio_pos:
+                return not bool(self.pi.read(gpio))
+        return None
+
     def initialize(self) -> None:
         for gpio_pin in self.dio_map.keys():
             self.pi.set_mode(gpio_pin, pigpio.INPUT)

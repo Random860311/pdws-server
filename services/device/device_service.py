@@ -28,6 +28,7 @@ class EConfigKey(str, Enum):
     SENSOR_ALARM_STOP_LOW_LOW = "alarm_stop_low_low"
     SENSOR_HIGH_HIGH_CRITICAL = "high_high_critical"
     SENSOR_LOW_LOW_CRITICAL = "low_low_critical"
+    SENSOR_ADJUSTMENT = "adjustment"
 
 class DeviceService(DeviceServiceProtocol):
     def __init__(self):
@@ -87,9 +88,11 @@ class DeviceService(DeviceServiceProtocol):
             alarm_stop_low_low=config.get_float(EConfigKey.SENSOR_ALARM_STOP_LOW_LOW, default.alarm_stop_low_low if default is not None else 0.0),
             is_high_high_critical=config.get_bool(EConfigKey.SENSOR_HIGH_HIGH_CRITICAL, default.is_high_high_critical if default is not None else False),
             is_low_low_critical=config.get_bool(EConfigKey.SENSOR_LOW_LOW_CRITICAL, default.is_low_low_critical if default is not None else False),
+            adjustment=config.get_float(EConfigKey.SENSOR_ADJUSTMENT, default.adjustment if default is not None else 0.0),
         )
 
     def set_sensor_config(self, device_name: str, sensor: SensorConfigDto) -> None:
+        print(f"set_sensor_config adjustment: {sensor.adjustment}")
         config = self.get_config(device_name)
         config.set(EConfigKey.SENSOR_VALUE_SCALED_MAX, sensor.value_scaled_max)
         config.set(EConfigKey.SENSOR_VALUE_SCALED_MIN, sensor.value_scaled_min)
@@ -108,3 +111,4 @@ class DeviceService(DeviceServiceProtocol):
         config.set(EConfigKey.SENSOR_ALARM_STOP_LOW_LOW, sensor.alarm_stop_low_low)
         config.set(EConfigKey.SENSOR_HIGH_HIGH_CRITICAL, sensor.is_high_high_critical)
         config.set(EConfigKey.SENSOR_LOW_LOW_CRITICAL, sensor.is_low_low_critical)
+        config.set(EConfigKey.SENSOR_ADJUSTMENT, sensor.adjustment)
