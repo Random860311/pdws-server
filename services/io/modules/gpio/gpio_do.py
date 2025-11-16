@@ -24,12 +24,12 @@ class GPIO_DO(DOModuleProtocol, GpioDio):
     def set_value(self, do_pos: int, value: bool) -> None:
         for gpio, di in self.dio_map.items():
             if di == do_pos:
-                print(f"Set GPIO DO: {do_pos}, Value: {value}")
+                # print(f"Set GPIO DO: {do_pos}, Value: {value}")
                 self.pi.write(gpio, value)
                 return
 
     def handle_pin_status(self, gpio: int, level: int, tick) -> None:
-        print(f"GPIO {gpio} changed to {level}")
+        # print(f"GPIO {gpio} changed to {level}")
         if self.callback is None:
             return
         di_pos = self.dio_map.get(gpio, None)

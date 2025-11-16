@@ -50,9 +50,9 @@ class GpioDio(DigitalModuleProtocol, ABC):
     def io_count(self) -> int:
         return len(self.dio_map)
 
-    def get_value(self, dio_pos: int) -> Optional[bool]:
+    def get_value(self, pos: int) -> Optional[bool]:
         for gpio, di in self.dio_map.items():
-            if di == dio_pos:
+            if di == pos:
                 return bool(self.pi.read(gpio))
         return None
 
@@ -60,5 +60,5 @@ class GpioDio(DigitalModuleProtocol, ABC):
         for gpio_callback in self.__gpio_callbacks:
             gpio_callback.cancel()
 
-    def managed_pos(self, io_pos: int) -> bool:
+    def is_managed_pos(self, io_pos: int) -> bool:
         return io_pos in self.dio_map.values()

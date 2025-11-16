@@ -1,6 +1,8 @@
 from typing import Optional, Sequence
 import threading
 
+from sqlalchemy import false
+
 from core.dispatcher.event_dispatcher_protocol import EventDispatcherProtocol
 from core.thread_manager_protocol import ThreadManagerProtocol
 from device.sensor.sensor_protocol import SensorProtocol
@@ -10,6 +12,7 @@ from device.system.system_protocol import SystemProtocol
 from dto.device.sensor_dto import SensorConfigDto
 from dto.station_dto import StationDto
 from services.application.application_service_protocol import ApplicationServiceProtocol
+from services.io.events.di_event import DIEvent
 from services.io.io_service_protocol import IOServiceProtocol
 from station.alternatator.alternator_protocol import AlternatorProtocol
 from station.starter.starter_protocol import StarterProtocol
@@ -42,6 +45,15 @@ class Station(StationProtocol):
         self.__sensor_additional = sensor_additional
         self.__systems: tuple[SystemProtocol, ...] = tuple(systems)
 
+        self.__emergency_stop: bool = False
+
+        event_dispatcher.subscribe(DIEvent, self.handle_di_change)
+
+    def handle_di_change(self, event: DIEvent):
+        match event.io_id:
+            case self.__io_service.di_emergency_stop:
+                self.handle_emergency_stop(event.value_new)
+
     @property
     def sensor_pressure(self) -> SensorProtocol:
         return self.__sensor_pressure
@@ -63,6 +75,9 @@ class Station(StationProtocol):
             sys.priority_hand = priority
 
     def set_system_mode(self, device_id: int, mode: ESystemMode) -> None:
+        print("Emergency stop: ", self.__emergency_stop)
+        if self.__emergency_stop:
+            return
         sys = self.get_system(device_id)
         if sys is not None:
             sys.mode = mode
@@ -73,12 +88,13 @@ class Station(StationProtocol):
         elif self.sensor_additional and config.device_id == self.sensor_additional.device_id:
             self.sensor_additional.config = config
 
-
     def __worker(self):
         while not self.__abort_event.is_set():
             self.__io_service.scan()
-            self.__alternator.alternate()
-            self.__starter.execute()
+
+            if not self.__emergency_stop:
+                self.__alternator.alternate()
+                self.__starter.execute()
 
             self.__emit_update()
 
@@ -91,18 +107,19 @@ class Station(StationProtocol):
     def stop(self):
         self.__abort_event.set()
 
+    def handle_emergency_stop(self, value: bool) -> None:
+        self.__emergency_stop = value
+        for sys in self.systems:
+            sys.set_emergency_stop(value)
+
     def __emit_update(self):
         systems_dto = [s.to_serializable() for s in self.systems]
-        # print(f"System 3 is called to run: {self.systems[2].is_called_to_run}")
-        # print(f"Sensor pressure: {self.sensor_pressure.value_scaled}")
         station_dto = StationDto(
             systems=systems_dto,
             pressure_sensor=self.sensor_pressure.to_serializable(),
             additional_sensor=self.sensor_additional.to_serializable() if self.sensor_additional is not None else None,
             io_status=self.__io_service.to_serializable(),
             app_settings=self.__app_service.to_serializable(),
+            emergency_stop=self.__emergency_stop,
         )
         self.__event_dispatcher.emit_async(StationUpdateEvent(station_dto))
-        # import json
-
-        # print(json.dumps(station_dto.to_dict(), indent=3))

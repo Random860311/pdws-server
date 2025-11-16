@@ -12,3 +12,5 @@ class StationDto(BaseDto):
     additional_sensor: Optional[SerializableProtocol] = field(kw_only=True, default=None)
     io_status: SerializableProtocol
     app_settings: SerializableProtocol
+
+    emergency_stop: bool = field(kw_only=True, default=False)

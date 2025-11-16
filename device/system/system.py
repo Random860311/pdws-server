@@ -43,17 +43,19 @@ class System(SystemProtocol, Device):
         self.__software_mode = kwargs.get("mode", ESystemMode.OFF)
         self.__physical_mode: ESystemMode = ESystemMode.OFF
 
+        self.__emergency_stop: bool = False
+
         event_dispatcher.subscribe(DIEvent, self.__handle_di_change)
 
     def __handle_di_change(self, event: DIEvent):
-        if not event.io_id in [self.__di_auto, self.__di_hand]:
-            return
-        if event.io_id == self.__di_hand and event.value_new:
-            self.__physical_mode = ESystemMode.HAND
-        elif event.io_id == self.__di_auto and event.value_new:
-            self.__physical_mode = ESystemMode.AUTO
-        else:
-            self.__physical_mode = ESystemMode.OFF
+        if event.io_id == self.io_service.di_emergency_stop:
+            self.set_emergency_stop(event.value_new)
+        elif event.io_id in [self.__di_hand, self.__di_auto]:
+            hand = event.io_id == self.__di_hand and event.value_new
+            auto = event.io_id == self.__di_auto and event.value_new
+            self.__physical_mode = ESystemMode.OFF if not hand and not auto else ESystemMode.HAND if hand else ESystemMode.AUTO
+            if self.__physical_mode != ESystemMode.AUTO:
+                self.mode = ESystemMode.OFF
 
     def __update_mode(self):
         if self.mode == ESystemMode.OFF:
@@ -92,6 +94,12 @@ class System(SystemProtocol, Device):
             self.contactor.stop()
 
     def set_emergency_stop(self, value: bool) -> None:
+        if self.__emergency_stop == value:
+            return
+
+        self.__emergency_stop = value
+        if self.__emergency_stop:
+            self.mode = ESystemMode.OFF
         if self.contactor is not None:
             self.contactor.set_emergency_stop(value)
 
@@ -152,15 +160,20 @@ class System(SystemProtocol, Device):
 
     @property
     def mode(self) -> ESystemMode:
-        # if self.__physical_mode == ESystemMode.OFF:
-        #     return ESystemMode.OFF
-        # elif self.__physical_mode == ESystemMode.HAND:
-        #     return ESystemMode.HAND
+        if self.__emergency_stop:
+            return ESystemMode.OFF
+        if self.__physical_mode == ESystemMode.OFF:
+            return ESystemMode.OFF
+        elif self.__physical_mode == ESystemMode.HAND:
+            return ESystemMode.HAND
         return self.__software_mode
 
     @mode.setter
     def mode(self, value: ESystemMode) -> None:
-        self.__software_mode = value
+        if self.__emergency_stop or self.__physical_mode != ESystemMode.AUTO:
+            self.__software_mode = ESystemMode.OFF
+        else:
+            self.__software_mode = value
         self.__update_mode()
 
     @property
@@ -207,8 +220,13 @@ class System(SystemProtocol, Device):
             can_run_auto=self.can_run_auto,
             call_to_run=self.is_called_to_run,
             alarm_fail_to_start=self.alarm_fail_to_start,
+            emergency_stop=self.__emergency_stop,
+            run_time_current=self.run_time_current,
+            run_time_last=self.run_time_last,
+            run_time_total=self.run_time_total,
 
             mode=self.mode,
+            remote_mode=self.__physical_mode,
             priority=self.priority,
             priority_hand=self.priority_hand,
             priority_auto=self.priority_auto,

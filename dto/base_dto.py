@@ -6,8 +6,6 @@ from typing import Any, Mapping,TypeVar, Self
 
 from core.serializable_protocol import SerializableProtocol
 
-
-
 @dataclass
 class BaseDto(SerializableProtocol):
     def to_dict(self) -> dict[str, Any]:

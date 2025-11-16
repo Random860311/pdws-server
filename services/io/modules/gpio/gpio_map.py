@@ -7,13 +7,12 @@ GPIO_DI_MAP: dict[int, int] = {
     26: 5,  # Pump 2 Hand
     16: 6,  # Pump 2 Auto
     20: 7,  # Pump 3 Hand
-    21: 8,  # Pump 3 AutoA
+    21: 8,  # Pump 3 Auto
     4: 9,   # Emergency stop
 }
 
 GPIO_DO_MAP: dict[int, int] = {
     23: 0,  # Cmd pump 1 Run
     24: 1,  # Cmd pump 2 Run
-
     25: 2,  # Cmd pump 3 Run
 }

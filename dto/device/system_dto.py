@@ -11,6 +11,7 @@ from dto.device.runnable_dto import RunnableDto
 @dataclass
 class SystemDto(RunnableDto):
     mode: int = field(kw_only=True, default=ESystemMode.OFF.value)
+    remote_mode: int = field(kw_only=True, default=ESystemMode.OFF.value)
     priority: int = field(kw_only=True, default=ESystemPriority.OUT.value)
     priority_auto: int = field(kw_only=True, default=ESystemPriority.OUT.value)
     priority_hand: int = field(kw_only=True, default=ESystemPriority.OUT.value)

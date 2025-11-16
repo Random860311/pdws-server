@@ -15,7 +15,7 @@ class GPIO_DI(DIModuleProtocol, GpioDio):
         return GPIO_DI_MAP
 
     def handle_pin_status(self, gpio: int, level: int, tick) -> None:
-        print(f"GPIO {gpio} changed to {level}")
+        # print(f"GPIO {gpio} changed to {level}")
         if self.callback is None:
             return
         di_pos = self.dio_map.get(gpio, None)
@@ -29,9 +29,9 @@ class GPIO_DI(DIModuleProtocol, GpioDio):
             result.append(not bool(self.pi.read(gpio)))
         return result
 
-    def get_value(self, dio_pos: int) -> Optional[bool]:
+    def get_value(self, pos: int) -> Optional[bool]:
         for gpio, di in self.dio_map.items():
-            if di == dio_pos:
+            if di == pos:
                 return not bool(self.pi.read(gpio))
         return None
 

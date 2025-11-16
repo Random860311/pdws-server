@@ -30,7 +30,7 @@ class Contactor(ContactorProtocol, DeviceRunnable):
         self.__di_running = di_running
         self.__do_run = do_run
 
-        event_dispatcher.subscribe(DIEvent, self.__handle_di_change)
+        event_dispatcher.subscribe(DIEvent, self.handle_di_change)
 
     @property
     def device_name(self) -> str:
@@ -48,12 +48,13 @@ class Contactor(ContactorProtocol, DeviceRunnable):
     def is_called_to_run(self) -> bool:
         return self.io_service.get_digital_output_value(self.do_run)
 
-    def __handle_di_change(self, event: DIEvent):
-        if event.io_id != self.di_running:
-            return
-
-        self.status = EDeviceStatus.RUNNING if event.value_new else EDeviceStatus.STOPPED
-        print(f"Contactor {self.device_name} status: {self.status}")
+    def handle_di_change(self, event: DIEvent):
+        match event.io_id:
+            case self.di_running:
+                self.status = EDeviceStatus.RUNNING if event.value_new else EDeviceStatus.STOPPED
+                print(f"Contactor {self.device_name} status: {self.status}")
+            case _:
+                super().handle_di_change(event)
 
     def call_to_run(self) -> None:
         if not self.can_run and self.status != EDeviceStatus.RUNNING:
@@ -69,11 +70,16 @@ class Contactor(ContactorProtocol, DeviceRunnable):
         return ContactorDto(
             device_id=self.device_id,
             device_name=self.device_name,
-            call_to_run=self.is_called_to_run,
-            alarm_fail_to_start=self.alarm_fail_to_start,
+            has_critical_alarm=self.has_critical_alarm,
+            has_alarm=self.has_alarm,
+
             status=self.status,
             can_run=self.can_run,
             can_run_auto=self.can_run_auto,
-            has_alarm=self.has_alarm,
-            has_critical_alarm=self.has_critical_alarm,
+            call_to_run=self.is_called_to_run,
+            alarm_fail_to_start=self.alarm_fail_to_start,
+            emergency_stop=self._emergency_stop,
+            run_time_current=self.run_time_current,
+            run_time_last=self.run_time_last,
+            run_time_total=self.run_time_total,
         )
