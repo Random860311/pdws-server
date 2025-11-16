@@ -14,12 +14,21 @@ class ApplicationService(ApplicationServiceProtocol):
         self.update_config(ApplicationDto(**merged))
 
     def update_config(self, config: ApplicationDto) -> None:
-        print(f"Updating application config: {config}")
+
         self.__config.set("system_count", config.system_count if config.system_count else 3)
         self.__config.set("level_set_point", config.level_set_point if config.level_set_point else 0.0)
         self.__config.set("level_offset", config.level_offset if config.level_offset else 0.0)
         self.__config.set("start_pump_delay", config.start_pump_delay if config.start_pump_delay else 0)
         self.__config.set("stop_pump_delay", config.stop_pump_delay if config.stop_pump_delay else 0)
+        self.__config.set("system_fail_to_start_delay", config.system_fail_to_start_delay if config.system_fail_to_start_delay else 0)
+
+    @property
+    def system_fail_to_start_delay(self) -> int:
+        return self.__config.get_int("system_fail_to_start_delay", 0)
+
+    @system_fail_to_start_delay.setter
+    def system_fail_to_start_delay(self, value: int) -> None:
+        self.__config.set("system_fail_to_start_delay", value)
 
     @property
     def system_count(self) -> int:
@@ -60,4 +69,5 @@ class ApplicationService(ApplicationServiceProtocol):
             level_offset=self.level_offset,
             start_pump_delay=self.start_pump_delay,
             stop_pump_delay=self.stop_pump_delay,
+            system_fail_to_start_delay=self.system_fail_to_start_delay,
         )

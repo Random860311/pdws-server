@@ -6,6 +6,7 @@ from device.base.device_runnable import DeviceRunnable
 from device.base.device_status import EDeviceStatus
 from device.contactor.contactor_protocol import ContactorProtocol
 from dto.device.contactor_dto import ContactorDto
+from services.application.application_service_protocol import ApplicationServiceProtocol
 from services.device.device_service_protocol import DeviceServiceProtocol
 from services.io.events.di_event import DIEvent
 from services.io.io_service_protocol import IOServiceProtocol
@@ -22,10 +23,11 @@ class Contactor(ContactorProtocol, DeviceRunnable):
             device_service: DeviceServiceProtocol,
             io_service: IOServiceProtocol,
             event_dispatcher: EventDispatcherProtocol,
+            app_service: ApplicationServiceProtocol,
             di_running: int,
             do_run: int
     ):
-        super().__init__(device_id, device_service, io_service, event_dispatcher)
+        super().__init__(device_id, device_service, io_service, event_dispatcher, app_service)
 
         self.__di_running = di_running
         self.__do_run = do_run
@@ -52,7 +54,7 @@ class Contactor(ContactorProtocol, DeviceRunnable):
         match event.io_id:
             case self.di_running:
                 self.status = EDeviceStatus.RUNNING if event.value_new else EDeviceStatus.STOPPED
-                print(f"Contactor {self.device_name} status: {self.status}")
+                # print(f"Contactor {self.device_name} status: {self.status}")
             case _:
                 super().handle_di_change(event)
 
@@ -61,9 +63,9 @@ class Contactor(ContactorProtocol, DeviceRunnable):
             return
         self.io_service.set_digital_output_value(self.do_run, True)
         super().call_to_run()
-        print(f"Contactor {self.device_name} called to run on DO: {self.do_run}")
 
     def stop(self) -> None:
+        super().stop()
         self.io_service.set_digital_output_value(self.do_run, False)
 
     def to_serializable(self) -> SerializableProtocol:

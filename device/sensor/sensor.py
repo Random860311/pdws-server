@@ -6,13 +6,23 @@ from device.sensor.sensor_config_manager import SensorConfigManager
 from device.base.device import Device
 from device.sensor.sensor_protocol import SensorProtocol
 from dto.device.sensor_dto import SensorConfigDto, SensorDto
+from services.application.application_service_protocol import ApplicationServiceProtocol
 from services.device.device_service_protocol import DeviceServiceProtocol
 from services.io.events.ai_event import AIEvent
 from services.io.io_service_protocol import IOServiceProtocol
 
 class Sensor(SensorProtocol, Device):
-    def __init__(self, device_id: int, device_service: DeviceServiceProtocol, io_service: IOServiceProtocol, event_dispatcher: EventDispatcherProtocol, config: SensorConfigDto, ai_id: int):
-        super().__init__(device_id, device_service, io_service, event_dispatcher)
+    def __init__(
+            self,
+            device_id: int,
+            device_service: DeviceServiceProtocol,
+            io_service: IOServiceProtocol,
+            event_dispatcher: EventDispatcherProtocol,
+            app_service: ApplicationServiceProtocol,
+            config: SensorConfigDto, 
+            ai_id: int
+    ):
+        super().__init__(device_id, device_service, io_service, event_dispatcher, app_service)
 
         current_config = device_service.get_sensor_config(device_id, self.device_name, config)
         self.__ai_id = ai_id

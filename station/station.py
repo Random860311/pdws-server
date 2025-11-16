@@ -75,7 +75,6 @@ class Station(StationProtocol):
             sys.priority_hand = priority
 
     def set_system_mode(self, device_id: int, mode: ESystemMode) -> None:
-        print("Emergency stop: ", self.__emergency_stop)
         if self.__emergency_stop:
             return
         sys = self.get_system(device_id)

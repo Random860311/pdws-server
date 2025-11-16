@@ -10,6 +10,7 @@ from device.system.system_mode import ESystemMode
 from device.system.system_priority import ESystemPriority
 from device.system.system_protocol import SystemProtocol
 from dto.device.system_dto import SystemDto
+from services.application.application_service_protocol import ApplicationServiceProtocol
 from services.device.device_service_protocol import DeviceServiceProtocol
 from services.io.events.di_event import DIEvent
 from services.io.io_service_protocol import IOServiceProtocol
@@ -28,9 +29,10 @@ class System(SystemProtocol, Device):
             device_service: DeviceServiceProtocol,
             io_service: IOServiceProtocol,
             event_dispatcher: EventDispatcherProtocol,
+            app_service: ApplicationServiceProtocol,
             **kwargs: Unpack[SystemKwargs]
     ):
-        super().__init__(device_id, device_service, io_service, event_dispatcher)
+        super().__init__(device_id, device_service, io_service, event_dispatcher, app_service)
 
         self.__args = kwargs
 
@@ -102,15 +104,6 @@ class System(SystemProtocol, Device):
             self.mode = ESystemMode.OFF
         if self.contactor is not None:
             self.contactor.set_emergency_stop(value)
-
-    @property
-    def alarm_fail_to_start_delay(self) -> int:
-        return self.contactor.alarm_fail_to_start_delay if self.contactor is not None else 0
-
-    @alarm_fail_to_start_delay.setter
-    def alarm_fail_to_start_delay(self, value: int) -> None:
-        if self.contactor is not None:
-            self.contactor.alarm_fail_to_start_delay = value
 
     @property
     def alarm_fail_to_start(self) -> bool:

@@ -10,3 +10,4 @@ class ApplicationDto(BaseDto):
     system_count: int = field(kw_only=True, default=3)
     start_pump_delay: int = field(kw_only=True, default=5)
     stop_pump_delay: int = field(kw_only=True, default=5)
+    system_fail_to_start_delay: int = field(kw_only=True, default=0)

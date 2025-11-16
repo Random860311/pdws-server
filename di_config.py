@@ -45,7 +45,8 @@ def create_di(defaults=True) -> StationProtocol:
                 **kwargs,
                 "device_service": container.resolve(DeviceServiceProtocol),
                 "io_service": container.resolve(IOServiceProtocol),
-                "event_dispatcher": container.resolve(EventDispatcherProtocol)
+                "event_dispatcher": container.resolve(EventDispatcherProtocol),
+                "app_service": container.resolve(ApplicationServiceProtocol)
             }
         )
     )
@@ -57,7 +58,8 @@ def create_di(defaults=True) -> StationProtocol:
                 **kwargs,
                 "device_service": container.resolve(DeviceServiceProtocol),
                 "io_service": container.resolve(IOServiceProtocol),
-                "event_dispatcher": container.resolve(EventDispatcherProtocol)
+                "event_dispatcher": container.resolve(EventDispatcherProtocol),
+                "app_service": container.resolve(ApplicationServiceProtocol)
             }
         )
     )
@@ -69,7 +71,8 @@ def create_di(defaults=True) -> StationProtocol:
                 **kwargs,
                 "device_service": container.resolve(DeviceServiceProtocol),
                 "io_service": container.resolve(IOServiceProtocol),
-                "event_dispatcher": container.resolve(EventDispatcherProtocol)
+                "event_dispatcher": container.resolve(EventDispatcherProtocol),
+                "app_service": container.resolve(ApplicationServiceProtocol)
             }
         )
     )
@@ -81,7 +84,8 @@ def create_di(defaults=True) -> StationProtocol:
                 **kwargs,
                 "device_service": container.resolve(DeviceServiceProtocol),
                 "io_service": container.resolve(IOServiceProtocol),
-                "event_dispatcher": container.resolve(EventDispatcherProtocol)
+                "event_dispatcher": container.resolve(EventDispatcherProtocol),
+                "app_service": container.resolve(ApplicationServiceProtocol)
             }
         )
     )
