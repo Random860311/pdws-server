@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" autoUpload="Always" serverName="wire@192.168.0.104:22 (6)" createEmptyFolders="true">
+  <component name="PublishConfigData" autoUpload="Always" serverName="wire@192.168.0.104:22 (7)" createEmptyFolders="true">
     <serverData>
       <paths name="amed@192.168.1.242:22 password">
         <serverdata>
@@ -80,6 +80,13 @@
         </serverdata>
       </paths>
       <paths name="wire@192.168.0.104:22 (6)">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/amed/Desktop/WorkSpace/PDWS" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="wire@192.168.0.104:22 (7)">
         <serverdata>
           <mappings>
             <mapping deploy="/home/amed/Desktop/WorkSpace/PDWS" local="$PROJECT_DIR$" />

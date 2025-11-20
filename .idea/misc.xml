@@ -3,5 +3,5 @@
   <component name="Black">
     <option name="sdkName" value="Python 3.11 (Pi)" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="Remote Python 3.11.2 (sftp://amed@192.168.0.104:22/home/amed/Desktop/WorkSpace/venv/bin/python) (3)" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="Remote Python 3.13.5 (sftp://amed@192.168.0.104:22/home/amed/Desktop/WorkSpace/venv/bin/python)" project-jdk-type="Python SDK" />
 </project>

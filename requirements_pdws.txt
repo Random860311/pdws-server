@@ -1,0 +1,11 @@
+Flask
+Flask-SocketIO
+SQLAlchemy
+pigpio
+eventlet
+adafruit-blinka
+adafruit-circuitpython-ads1x15
+adafruit-circuitpython-mcp3xxx
+filelock
+RPi.GPIO
+Flask-Cors

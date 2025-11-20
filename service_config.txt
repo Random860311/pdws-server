@@ -1,0 +1,39 @@
+# To start / stop the service
+sudo systemctl stop pdws.service
+
+# File with service settings
+sudo nano /etc/systemd/system/pdws.service
+
+# Initial file settings
+[Unit]
+Description=PDWS Python App
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=amed
+WorkingDirectory=/home/amed/Desktop/WorkSpace/PDWS
+ExecStart=/home/amed/Desktop/WorkSpace/venv/bin/python /home/amed/Desktop/WorkSpace/PDWS/main.py
+Restart=on-failure
+RestartSec=5
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
+
+# To enable the service
+sudo systemctl daemon-reload
+sudo systemctl enable pdws.service      # auto-start on boot
+sudo systemctl start pdws.service       # start now
+
+# To check the status of the service
+sudo systemctl status pdws.service
+
+# Live log stream:
+sudo journalctl -u pdws.service -f
+
+# Example commands
+sudo systemctl start pdws.service
+sudo systemctl stop pdws.service
+sudo systemctl restart pdws.service

@@ -17,8 +17,10 @@ import di_config
 
 if __name__ == "__main__":
     print("[MAIN] Starting...")
-    cert_path = Path("web/certs/cert.pem")
-    key_path = Path("web/certs/key.pem")
+    # cert_path = Path("web/certs/cert.pem")
+    # key_path = Path("web/certs/key.pem")
+    cert_path = Path("web/certs/cert_192.168.11.143.pem")
+    key_path = Path("web/certs/key_192.168.11.143.pem")
 
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     context.load_cert_chain(cert_path, key_path)
@@ -56,8 +58,8 @@ if __name__ == "__main__":
                 # Eventlet/Gevent expect certfile/keyfile (NOT ssl_context)
                 socketio.run(
                     flask_app,
-                    certfile=str(cert_path),
-                    keyfile=str(key_path),
+                    # certfile=str(cert_path),
+                    # keyfile=str(key_path),
                     **run_kwargs,
                 )
             else:
